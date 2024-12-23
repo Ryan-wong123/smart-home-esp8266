@@ -1,7 +1,9 @@
 ### Smart home environmental monitor system
 
 ## Board A schematics
-![Board A](Board A schematics.png)
+![Board A](Board%20A%20schematics.png)
+
 
 ## Board B schematics
-![Board B](Board B schematics.png)
+![Board B](Board%20B%20schematics.png)
+
