@@ -4,7 +4,7 @@ const int photoSensor = A0;        // Light sensor
 int photoValue = 0;
 int photoThreshold = 50;            // Threshold for light
 
-const int buzzerPin = D1;          // Buzzer pin
+
 
 const int humidityPin = D6;        // DHT sensor pin
 int temperature = 0;
@@ -20,8 +20,6 @@ int distance = 0;
 void setup() {
   pinMode(photoSensor, INPUT);
 
-  pinMode(buzzerPin, OUTPUT);
-  digitalWrite(buzzerPin, LOW);
 
   pinMode(trigPin,OUTPUT);
   pinMode(echoPin,INPUT);
@@ -33,10 +31,9 @@ void setup() {
 void loop() {
   if (isSunny()) {
     Serial.println("Too bright");
-    tone(buzzerPin, 1000);         // Turn on buzzer
+
   } else {
     Serial.println("Too dim");
-    noTone(buzzerPin);             // Turn off buzzer
   }
 
   readTempHum();                   // Read temperature and humidity
