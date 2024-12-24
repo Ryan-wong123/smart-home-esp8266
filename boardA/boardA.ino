@@ -1,10 +1,17 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
 #include "DHT.h"
+
+// Set the PORT for the web server
+ESP8266WebServer server(80);
+
+// The WiFi details 
+const char* ssid = "Sweethome38";
+const char* password =  "ernyse2004"; 
 
 const int photoSensor = A0;        // Light sensor
 int photoValue = 0;
 int photoThreshold = 50;            // Threshold for light
-
-
 
 const int humidityPin = D6;        // DHT sensor pin
 int temperature = 0;
@@ -18,6 +25,9 @@ long duration = 0;
 int distance = 0;
 
 void setup() {
+  //Connect to the WiFi network
+  WiFi.begin(ssid, password); 
+
   pinMode(photoSensor, INPUT);
 
 
@@ -26,9 +36,31 @@ void setup() {
 
   Serial.begin(9600);              // Start serial communication at 9600 baud rate
   dht.begin();                     // Initialize DHT sensor
+
+    // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {  
+      delay(500);
+      Serial.println("Waiting to connect...");
+  }
+
+  //Print the board IP address
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());  
+
+  server.on("/", get_index); // Get the index page on root route 
+  //server.on("/setBuzzerStatus", setBuzzerStatus); // Get the setBuzzer page
+  
+  server.begin(); //Start the server
+  Serial.println("Server listening");
 }
 
 void loop() {
+  // This will keep the server and serial monitor available 
+  Serial.println("Server is running");
+
+  //Handling of incoming client requests
+  server.handleClient(); 
+
   if (isSunny()) {
     Serial.println("Too bright");
 
@@ -90,4 +122,28 @@ void distanceCentimeter(){
 
   Serial.print(distance);
   Serial.println("cm");
+}
+
+void get_index() {
+
+  String html ="<!DOCTYPE html> <html> ";
+  html += "<head><meta http-equiv=\"refresh\" content=\"2\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head>";
+  html += "<body> <h1>Home environmental monitor system</h1>";
+  html += "<div> <p> <strong> The temperature preference is: ";
+  html += temperature;
+  html +="</strong> degrees. </p>";
+  html += "<div> <p> <strong> The humidity preference is: ";
+  html += humidity;
+  html +="</strong> %. </p>";
+  html += "<div> <p> <strong> The light intensity is: ";
+  html += photoValue;
+  html +="</strong> lx . </p>";
+  html += "<div> <p> <strong> The water level is: ";
+  html += distance;
+  html +="</strong> cm. </p>";
+  html +="</body> </html>";
+  
+  //Print a welcoming message on the index page
+  server.send(200, "text/html", html);
+  
 }
