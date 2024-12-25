@@ -23,6 +23,7 @@ Keypad keypad = Keypad(makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_N
 const float temperatureThreshold = 30.0;  // Threshold for temperature
 const int lightThreshold = 50;            // Threshold for light intensity
 const int waterLevelThreshold = 50;   
+const int humidityThreshold = 50; 
 
 // WiFi credentials
 const char* ssid = "Sweethome38";
@@ -93,6 +94,7 @@ void fetchData() {
       handleLight(payload);
       handleHumidity(payload);
       handleWaterLevel(payload);
+      Serial.println("------------------------------");
     } else {
       Serial.println("Error in HTTP request");
     }
@@ -110,13 +112,13 @@ void handleTemperature(const String &payload) {
     int endIndex = payload.indexOf(endToken, startIndex);
     String valueStr = payload.substring(startIndex, endIndex);
     float temperature = valueStr.toFloat();
-    Serial.print("Extracted temperature: ");
-    Serial.println(temperature);
-
+    
     if (temperature > temperatureThreshold) {
       digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+      Serial.println("Extracted temperature: " + String(temperature) + " is too hot");
     } else {
       digitalWrite(buzzerPin, LOW);  // Turn off buzzer
+      Serial.println("Extracted temperature: " + String(temperature) + " is too cold");
     }
   } else {
     Serial.println("Temperature data not found in response.");
@@ -132,15 +134,13 @@ void handleLight(const String &payload) {
     int endIndex = payload.indexOf(endToken, startIndex);
     String valueStr = payload.substring(startIndex, endIndex);
     int lightIntensity = valueStr.toInt();
-    Serial.print("Extracted light intensity: ");
-    Serial.println(lightIntensity);
 
     if (lightIntensity > lightThreshold) {
       myServo.write(90); // Rotate servo to 90 degrees
-      Serial.println("too bright");
+      Serial.println("Extracted light intensity: " + String(lightIntensity) + " is too bright");
     } else {
       myServo.write(180);  // Rotate servo to 0 degrees
-      Serial.println("too dark");
+      Serial.println("Extracted light intensity: " + String(lightIntensity) + " is too dark");
     }
   } else {
     Serial.println("Light intensity data not found in response.");
@@ -156,13 +156,13 @@ void handleHumidity(const String &payload) {
     int endIndex = payload.indexOf(endToken, startIndex);
     String valueStr = payload.substring(startIndex, endIndex);
     float humidity = valueStr.toFloat();
-    Serial.print("Extracted humidity: ");
-    Serial.println(humidity);
 
-    if (humidity > 70.0) { // Example threshold for high humidity
+    if (humidity > humidityThreshold) { // Example threshold for high humidity
       digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+      Serial.println("Extracted humidity: " + String(humidity) + " is too humid");
     } else {
       digitalWrite(buzzerPin, LOW);  // Turn off buzzer
+      Serial.println("Extracted humidity: " + String(humidity) + " not humid");
     }
   } else {
     Serial.println("Humidity data not found in response.");
@@ -178,13 +178,13 @@ void handleWaterLevel(const String &payload) {
     int endIndex = payload.indexOf(endToken, startIndex);
     String valueStr = payload.substring(startIndex, endIndex);
     float waterLevel = valueStr.toFloat();
-    Serial.print("Extracted water level: ");
-    Serial.println(waterLevel);
 
     if (waterLevel < waterLevelThreshold) { // Example threshold for low water level
-      digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+      //digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+      Serial.println("Extracted water level: " + String(waterLevel) + " is too high");
     } else {
-      digitalWrite(buzzerPin, LOW);  // Turn off buzzer
+      //digitalWrite(buzzerPin, LOW);  // Turn off buzzer
+      Serial.println("Extracted water level: " + String(waterLevel) + " is too low");
     }
   } else {
     Serial.println("Water level data not found in response.");
