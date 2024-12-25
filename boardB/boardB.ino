@@ -91,6 +91,7 @@ void fetchData() {
       handleTemperature(payload);
       handleLight(payload);
       handleHumidity(payload);
+      handleWaterLevel(payload);
     } else {
       Serial.println("Error in HTTP request");
     }
@@ -166,3 +167,26 @@ void handleHumidity(const String &payload) {
     Serial.println("Humidity data not found in response.");
   }
 }
+
+void handleWaterLevel(const String &payload) {
+  String startToken = "The water level is: ";
+  String endToken = " cm";
+  int startIndex = payload.indexOf(startToken);
+  if (startIndex != -1) {
+    startIndex += startToken.length();
+    int endIndex = payload.indexOf(endToken, startIndex);
+    String valueStr = payload.substring(startIndex, endIndex);
+    float waterLevel = valueStr.toFloat();
+    Serial.print("Extracted water level: ");
+    Serial.println(waterLevel);
+
+    if (waterLevel < 10.0) { // Example threshold for low water level
+      digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+    } else {
+      digitalWrite(buzzerPin, LOW);  // Turn off buzzer
+    }
+  } else {
+    Serial.println("Water level data not found in response.");
+  }
+}
+
