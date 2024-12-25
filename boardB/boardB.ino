@@ -62,7 +62,7 @@ void loop() {
 void getKeypress() {
   char key = keypad.getKey();
   if (key) {
-    Serial.println(key);
+    Serial.println("keyed: "+ char(key));
     if (key == '1') {
       handleTemperature(payload);
     } else if (key == '2') {
