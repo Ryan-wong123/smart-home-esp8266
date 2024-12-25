@@ -1,6 +1,8 @@
+
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 #include <Servo.h>
 #include <Keypad.h>
-
 Servo myServo;  // Create a Servo object to control a servo motor
 
 const int buzzerPin = D1;          // Buzzer pin
@@ -18,12 +20,24 @@ byte pin_column[COLUMN_NUM] = {D6, D7, D8};  // Connect columns to D1, D2, D3
 
 Keypad keypad = Keypad(makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_NUM);
 
+// WiFi credentials
+const char* ssid = "Sweethome38";
+const char* password = "ernyse2004";
+
 void setup() {
   myServo.attach(D2);  // Attach the servo to the D2 pin (GPIO4) of NodeMCU
 
   pinMode(buzzerPin, OUTPUT);
   digitalWrite(buzzerPin, LOW);
   Serial.begin(9600);
+
+  // Connect to WiFi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.println("Connecting to WiFi...");
+  }
+  Serial.println("Connected to WiFi");
 }
 
 void loop() {
@@ -44,23 +58,79 @@ void loop() {
 
 }
 
-
-void getKeypress(){
+void getKeypress() {
   char key = keypad.getKey(); // Check if a key is pressed
 
   if (key) {
-    // If a key is pressed, print the key value
     Serial.println(key);
 
-    // Control the servo motor based on the key press
+    // Control the servo motor or get data from the server
     if (key == '1') {
-      myServo.write(0);   // Move to 0 degrees
-    } 
-    else if (key == '2') {
-      myServo.write(90);  // Move to 90 degrees
-    } 
-    else if (key == '3') {
-      myServo.write(180); // Move to 180 degrees
+      fetchData("temperature");
+    } else if (key == '2') {
+      fetchData("humidity");
+    } else if (key == '3') {
+      fetchData("light");
     }
+  }
+}
+void fetchData(const String &parameter) {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    WiFiClient client;  // Create a WiFiClient object
+
+    // Replace <First_NodeMCU_IP> with the actual IP of the first NodeMCU
+    String serverUrl = "http://192.168.1.251/";
+    http.begin(client, serverUrl); // Use WiFiClient object with begin()
+
+    int httpCode = http.GET(); // Make the GET request
+
+    if (httpCode > 0) { // Check for a valid response
+      String payload = http.getString(); // Get the response as a string
+      Serial.println("Response from server:");
+      Serial.println(payload);
+
+      if (parameter == "temperature") {
+        extractAndPerformAction(payload, "The temperature preference is: ", " degrees");
+      } else if (parameter == "humidity") {
+        extractAndPerformAction(payload, "The humidity preference is: ", " %");
+      } else if (parameter == "light") {
+        extractAndPerformAction(payload, "The light intensity is: ", " lx");
+      }
+    } else {
+      Serial.println("Error in HTTP request");
+    }
+    http.end(); // End the HTTP connection
+  }
+}
+
+
+void extractAndPerformAction(const String &payload, const String &startToken, const String &endToken) {
+  int startIndex = payload.indexOf(startToken);
+  if (startIndex != -1) {
+    startIndex += startToken.length();
+    int endIndex = payload.indexOf(endToken, startIndex);
+    String valueStr = payload.substring(startIndex, endIndex);
+    Serial.print("Extracted value: ");
+    Serial.println(valueStr);
+
+    // Example actions based on the value
+    if (startToken == "The temperature preference is: ") {
+      float temperature = valueStr.toFloat();
+      if (temperature > 30) {
+        myServo.write(90); // Example action for temperature
+      } else {
+        myServo.write(0);
+      }
+    } else if (startToken == "The humidity preference is: ") {
+      int humidity = valueStr.toInt();
+      if (humidity > 70) {
+        digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+      } else {
+        digitalWrite(buzzerPin, LOW); // Turn off buzzer
+      }
+    }
+  } else {
+    Serial.println("Error: Data not found in response.");
   }
 }
