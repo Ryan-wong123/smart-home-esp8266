@@ -2,23 +2,10 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <Servo.h>
-#include <Keypad.h>
+
 Servo myServo;  // Create a Servo object to control a servo motor
 
 const int buzzerPin = D1;          // Buzzer pin
-
-// Define the keypad matrix for 1x3 keypad
-const byte ROW_NUM    = 1; // One row
-const byte COLUMN_NUM = 3; // Three columns
-
-char keys[ROW_NUM][COLUMN_NUM] = {
-  {'1','2','3'}  // The 3 keys in the first row
-};
-
-byte pin_rows[ROW_NUM] = {D5};  // Connect Row 1 to D5 
-byte pin_column[COLUMN_NUM] = {D6, D7, D8};  // Connect columns to D6,D7,D8
-
-Keypad keypad = Keypad(makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_NUM);
 
 const float temperatureThreshold = 30.0;  // Threshold for temperature
 const int lightThreshold = 50;            // Threshold for light intensity
@@ -28,7 +15,7 @@ const int humidityThreshold = 50;
 // WiFi credentials
 const char* ssid = "Sweethome38";
 const char* password = "ernyse2004";
-String payload ="";
+
 void setup() {
   myServo.attach(D2);  // Attach the servo to the D2 pin (GPIO4) of NodeMCU
   myServo.write(0);    // Initialize servo to 0 position
@@ -49,28 +36,12 @@ void setup() {
 void loop() {
    if (WiFi.status() == WL_CONNECTED) {
     fetchData();
-    getKeypress();
 
   } else {
     Serial.println("WiFi not connected!");
   }
-  delay(2000); // Wait for 2 seconds before next reading
+  delay(3000); // Wait for 2 seconds before next reading
 
-
-}
-
-void getKeypress() {
-  char key = keypad.getKey();
-  if (key) {
-    Serial.println("keyed: "+ char(key));
-    if (key == '1') {
-      handleTemperature(payload);
-    } else if (key == '2') {
-      handleHumidity(payload);
-    } else if (key == '3') {
-      handleLight(payload);
-    }
-  }
 }
 
 void fetchData() {
@@ -85,7 +56,7 @@ void fetchData() {
     int httpCode = http.GET(); // Make the GET request
 
     if (httpCode > 0) { // Check for a valid response
-      payload = http.getString(); // Get the response as a string
+      String payload = http.getString(); // Get the response as a string
       // Serial.println("Response from server:");
       // Serial.println(payload);
 
