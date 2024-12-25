@@ -22,6 +22,7 @@ Keypad keypad = Keypad(makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_N
 
 const float temperatureThreshold = 30.0;  // Threshold for temperature
 const int lightThreshold = 50;            // Threshold for light intensity
+const int waterLevelThreshold = 50;   
 
 // WiFi credentials
 const char* ssid = "Sweethome38";
@@ -84,8 +85,8 @@ void fetchData() {
 
     if (httpCode > 0) { // Check for a valid response
       payload = http.getString(); // Get the response as a string
-      Serial.println("Response from server:");
-      Serial.println(payload);
+      // Serial.println("Response from server:");
+      // Serial.println(payload);
 
       // Extract and act on the data
       handleTemperature(payload);
@@ -180,7 +181,7 @@ void handleWaterLevel(const String &payload) {
     Serial.print("Extracted water level: ");
     Serial.println(waterLevel);
 
-    if (waterLevel < 10.0) { // Example threshold for low water level
+    if (waterLevel < waterLevelThreshold) { // Example threshold for low water level
       digitalWrite(buzzerPin, HIGH); // Turn on buzzer
     } else {
       digitalWrite(buzzerPin, LOW);  // Turn off buzzer
