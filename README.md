@@ -6,7 +6,7 @@
 - NodeMCU esp8266
 - Servo motor
 - Buzzer
-- 4x4 keypad
+- RGB LED
 
 ### Board B schematics
 ![Board B](Board%20B%20schematics.png)
