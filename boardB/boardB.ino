@@ -5,23 +5,36 @@
 
 Servo myServo;  // Create a Servo object to control a servo motor
 
-const int buzzerPin = D1;          // Buzzer pin
+const int buzzerPin = D5;          // Buzzer pin
 
 const float temperatureThreshold = 30.0;  // Threshold for temperature
 const int lightThreshold = 50;            // Threshold for light intensity
 const int waterLevelThreshold = 50;   
 const int humidityThreshold = 50; 
+bool isTooHot = false;
+bool isTooHumid = false;
+bool isTooBright = false;
+bool waterTooHigh = false;
 
 // WiFi credentials
 const char* ssid = "Sweethome38";
 const char* password = "ernyse2004";
 
+const int redLedPin = D2;
+const int greenLedPin = D3;
+const int blueLedPin = D4;
+
 void setup() {
-  myServo.attach(D2);  // Attach the servo to the D2 pin (GPIO4) of NodeMCU
+  myServo.attach(D6);  // Attach the servo to the D2 pin (GPIO4) of NodeMCU
   myServo.write(0);    // Initialize servo to 0 position
 
   pinMode(buzzerPin, OUTPUT);
   digitalWrite(buzzerPin, LOW);
+
+  pinMode(redLedPin, OUTPUT);
+  pinMode(greenLedPin, OUTPUT);
+  pinMode(blueLedPin, OUTPUT);
+
   Serial.begin(9600);
 
   // Connect to WiFi
@@ -36,12 +49,23 @@ void setup() {
 void loop() {
    if (WiFi.status() == WL_CONNECTED) {
     fetchData();
-
+    if(isTooHot || isTooHumid || isTooBright || waterTooHigh ){
+        digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+        rgbLed(0,0,255);
+    }else{
+      digitalWrite(buzzerPin, LOW);  // Turn off buzzer
+      rgbLed(255,0,0);
+    }
   } else {
     Serial.println("WiFi not connected!");
   }
   delay(3000); // Wait for 2 seconds before next reading
+}
 
+void rgbLed(int redLedAmount, int greenLedAmount, int blueLedAmount){
+  analogWrite(redLedPin,redLedAmount);
+  analogWrite(greenLedPin,greenLedAmount);
+  analogWrite(blueLedPin,blueLedAmount);
 }
 
 void fetchData() {
@@ -85,10 +109,10 @@ void handleTemperature(const String &payload) {
     float temperature = valueStr.toFloat();
     
     if (temperature > temperatureThreshold) {
-      digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+      isTooHot = true;
       Serial.println("Extracted temperature: " + String(temperature) + " is too hot");
     } else {
-      digitalWrite(buzzerPin, LOW);  // Turn off buzzer
+      isTooHot = false;
       Serial.println("Extracted temperature: " + String(temperature) + " is too cold");
     }
   } else {
@@ -108,9 +132,11 @@ void handleLight(const String &payload) {
 
     if (lightIntensity > lightThreshold) {
       myServo.write(90); // Rotate servo to 90 degrees
+      isTooBright = true;
       Serial.println("Extracted light intensity: " + String(lightIntensity) + " is too bright");
     } else {
       myServo.write(180);  // Rotate servo to 0 degrees
+      isTooBright = false;
       Serial.println("Extracted light intensity: " + String(lightIntensity) + " is too dark");
     }
   } else {
@@ -129,10 +155,10 @@ void handleHumidity(const String &payload) {
     float humidity = valueStr.toFloat();
 
     if (humidity > humidityThreshold) { // Example threshold for high humidity
-      digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+      isTooHumid = true;
       Serial.println("Extracted humidity: " + String(humidity) + " is too humid");
     } else {
-      digitalWrite(buzzerPin, LOW);  // Turn off buzzer
+      isTooHumid = false;
       Serial.println("Extracted humidity: " + String(humidity) + " not humid");
     }
   } else {
@@ -151,10 +177,10 @@ void handleWaterLevel(const String &payload) {
     float waterLevel = valueStr.toFloat();
 
     if (waterLevel < waterLevelThreshold) { // Example threshold for low water level
-      //digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+      waterTooHigh = true;
       Serial.println("Extracted water level: " + String(waterLevel) + " is too high");
     } else {
-      //digitalWrite(buzzerPin, LOW);  // Turn off buzzer
+      waterTooHigh = false;
       Serial.println("Extracted water level: " + String(waterLevel) + " is too low");
     }
   } else {
