@@ -33,8 +33,7 @@ https://github.com/nodemcu/nodemcu-devkit/tree/master/Drivers
 
 2. Install esp8266 board
 Tools > Board > Boards Manager
-<br>
-Download latest esp8266 version
+- Download latest esp8266 version
 
 
 
