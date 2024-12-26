@@ -19,13 +19,18 @@
 ### Setup
 1. Install packages for the esp8266
 <br>
+
 ```bash
 http://arduino.esp8266.com/stable/package_esp8266com_index.json
 ```
+
 <br>
+
 ```bash
 https://github.com/nodemcu/nodemcu-devkit/tree/master/Drivers
 ```
+<br>
+
 2. Install esp8266 board
 Tools > Board > Boards Manager
 <br>
