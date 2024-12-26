@@ -17,7 +17,7 @@
 - Ultrasonic sensor
 
 ### Setup
-1. Install packages for the esp8266
+1. Install packages for the esp8266 in the preference link url
 <br>
 
 ```bash
