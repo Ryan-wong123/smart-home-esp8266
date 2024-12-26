@@ -86,7 +86,6 @@ bool isSunny() {
 }
 
 void readTempHum() {
-  delay(2000); // Wait 2 seconds for the next reading
 
   temperature = dht.readTemperature();   // Read temperature
   humidity = dht.readHumidity();         // Read humidity

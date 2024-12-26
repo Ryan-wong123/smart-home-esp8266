@@ -76,6 +76,7 @@ void fetchData() {
     // Replace <First_NodeMCU_IP> with the actual IP of the first NodeMCU
     String serverUrl = "http://192.168.1.251/";
     http.begin(client, serverUrl); // Use WiFiClient object with begin()
+    http.setTimeout(5000); // Set timeout to 5 seconds
 
     int httpCode = http.GET(); // Make the GET request
 
