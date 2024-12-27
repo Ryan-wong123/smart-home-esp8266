@@ -24,8 +24,8 @@ bool isTooBright = false;
 bool isWaterTooHigh = false;
 
 //Wifi ssid and password (replace with own wifi ssid and password)
-const char* ssid = "Sweethome38";
-const char* password = "ernyse2004";
+const char* ssid = "<wifi_SSID>";
+const char* password = "<Wifi_password>";
 
 //Set the pins for the RGB LED
 const int redLedPin = D2;
