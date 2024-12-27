@@ -21,11 +21,11 @@ const int waterLevelThreshold = 20;
 bool isTooHot = false;
 bool isTooHumid = false;
 bool isTooBright = false;
-bool waterTooHigh = false;
+bool isWaterTooHigh = false;
 
 //Wifi ssid and password (replace with own wifi ssid and password)
-const char* ssid = "<Wifi_SSID>";
-const char* password = "<Wifi_password>";
+const char* ssid = "Sweethome38";
+const char* password = "ernyse2004";
 
 //Set the pins for the RGB LED
 const int redLedPin = D2;
@@ -72,7 +72,7 @@ void loop() {
       fetchData();
       
       //Give audio and visual feedback if any of the readings from the sensor exceed the respective threshold level
-      if(isTooHot || isTooHumid || isTooBright || waterTooHigh ){
+      if(isTooHot || isTooHumid || isTooBright || isWaterTooHigh ){
           //Beep the buzzer
           digitalWrite(buzzerPin, HIGH);
           //Set the rgb led to blue color
@@ -117,135 +117,70 @@ void fetchData() {
     //Get all data readings from the server
     String payload = http.getString();
 
-    //Get the temperature reading
-    GetTemperatureReading(payload);
-    //Get the light intensity reading
-    GetLightReading(payload);
-    //Get humidity reading
-    GetHumidityReading(payload);
-    //Get distance reading
-    GetWaterLevelReading(payload);
-    Serial.println("------------------------------------");
-  } else {
-    Serial.println("Error fetching code");
-  }
-  http.end();
-}
+    
+    //Get individual readings
+    int temperature = ExtractReading(payload, "The temperature level is: ", " degrees");
+    int lightIntensity = ExtractReading(payload, "The light intensity is: ", " lx");
+    int humidity = ExtractReading(payload, "The humidity level is: ", " %");
+    int waterLevel = ExtractReading(payload, "The water level is: ", " cm");
 
-//Function to get temperature reading
-void GetTemperatureReading(const String &payload) {
-  //Set the start of the token position
-  String startToken = "The temperature level is: ";
-  //Set the ending token position
-  String endToken = " degrees";
-
-  //Get the index position of the start token
-  int startIndex = payload.indexOf(startToken);
-
-  //Check if starting token is available
-  if (startIndex != -1) {
-    //Move the index to the end of the start token
-    startIndex += startToken.length();
-    //Get the index position of the end token
-    int endIndex = payload.indexOf(endToken, startIndex);
-    //Get the temperature reading
-    int temperature = payload.substring(startIndex, endIndex).toInt();
-
-    //Check if the temperature reading has exceeded the threshold
+    //Check if the temperature is over the threshold value
     if (temperature > temperatureThreshold) {
-      //Set the isTooHot boolean to true to activate the feedback
+      //Set the isTooHot boolean to true to activate feedback
       isTooHot = true;
       Serial.println("Temperature: " + String(temperature) + " is too hot");
     } else {
-      //Set the isTooHot boolean to false
+      //Set the isTooHot boolean to false to off feedback
       isTooHot = false;
       Serial.println("Temperature: " + String(temperature) + " is normal");
     }
-  } else {
-    Serial.println("Unable to get temperature");
-  }
-}
 
-//Function to get light reading
-void GetLightReading(const String &payload) {
-  //Set the start of the token position
-  String startToken = "The light intensity is: ";
-  //Set the ending token position
-  String endToken = " lx";
-
-  //Get the index position of the start token
-  int startIndex = payload.indexOf(startToken);
-
-  //Check if starting token is available
-  if (startIndex != -1) {
-    //Move the index to the end of the start token
-    startIndex += startToken.length();
-    //Get the index position of the end token
-    int endIndex = payload.indexOf(endToken, startIndex);
-    //Get the light reading
-    int lightIntensity = payload.substring(startIndex, endIndex).toInt();
-
-    //Check if the light reading has exceeded the threshold
+    //Check if the light intensity is over the threshold value
     if (lightIntensity > lightThreshold) {
-      //Rotate the servo motor to 90 degrees to provide shelter
-      myServo.write(90);
-      //Set the isTooBright boolean to true to activate the feedback
+      //Rotate the servo motor to 90 degrees to activate shelter
+      myServo.write(90); 
+      //Set the isTooBright boolean to true to activate feedback
       isTooBright = true;
       Serial.println("Light intensity: " + String(lightIntensity) + " is too bright");
     } else {
       //Rotate the servo motor to 180 degrees back to normal
       myServo.write(180); 
-      //Set the isTooBright boolean to false 
+      //Set the isTooBright boolean to false to off feedback
       isTooBright = false;
       Serial.println("Light intensity: " + String(lightIntensity) + " is normal");
     }
-  } else {
-    Serial.println("Unable to get light reading");
-  }
-}
 
-//Function to get humidity reading
-void GetHumidityReading(const String &payload) {
-  //Set the start of the token position
-  String startToken = "The humidity level is: ";
-  //Set the ending token position
-  String endToken = " %";
-
-  //Get the index position of the start token
-  int startIndex = payload.indexOf(startToken);
-
-  //Check if starting token is available
-  if (startIndex != -1) {
-    //Move the index to the end of the start token
-    startIndex += startToken.length();
-    //Get the index position of the end token
-    int endIndex = payload.indexOf(endToken, startIndex);
-    //Get the humidity reading
-    int humidity = payload.substring(startIndex, endIndex).toInt();
-
-    //Check if the humidity reading has exceeded the threshold
-    if (humidity > humidityThreshold) { 
-      //Set the isTooHumid boolean to true to activate the feedback
+    //Check if the humidity is over the threshold value
+    if (humidity > humidityThreshold) {
+      //Set the isTooHumid boolean to true to activate feedback
       isTooHumid = true;
       Serial.println("Humidity: " + String(humidity) + " is too humid");
     } else {
-      //Set the isTooHumid boolean to false
+      //Set the isTooHumid boolean to false to off feedback
       isTooHumid = false;
-      Serial.println("Humidity: " + String(humidity) + " not humid");
+      Serial.println("Humidity: " + String(humidity) + " is normal");
     }
+
+    //Check if the water level is over the threshold value
+    if (waterLevel < waterLevelThreshold) {
+      //Set the isWaterTooHigh boolean to true to activate feedback
+      isWaterTooHigh = true;
+      Serial.println("Water level: " + String(waterLevel) + " is too high");
+    } else {
+      //Set the isWaterTooHigh boolean to false to off feedback
+      isWaterTooHigh = false;
+      Serial.println("Water level: " + String(waterLevel) + " is normal");
+    }
+    Serial.println("------------------------------------");
   } else {
-    Serial.println("Unable to get humidity reading");
+    Serial.println("Error fetching data");
   }
+  http.end();
 }
 
-//Function to get distance reading
-void GetWaterLevelReading(const String &payload) {
+//Function to extract the reading value only
+int ExtractReading(const String &payload, const String &startToken, const String &endToken) {
   //Set the start of the token position
-  String startToken = "The water level is: ";
-  //Set the ending token position
-  String endToken = " cm";
-
-  //Get the index position of the start token
   int startIndex = payload.indexOf(startToken);
 
   //Check if starting token is available
@@ -254,21 +189,12 @@ void GetWaterLevelReading(const String &payload) {
     startIndex += startToken.length();
     //Get the index position of the end token
     int endIndex = payload.indexOf(endToken, startIndex);
-    //Get the distance reading
-    int waterLevel = payload.substring(startIndex, endIndex).toInt();
 
-    //Check if the distance reading has exceeded the threshold
-    if (waterLevel < waterLevelThreshold) {
-      //Set the waterTooHigh boolean to true to activate the feedback
-      waterTooHigh = true;
-      Serial.println("Water level: " + String(waterLevel) + " is too high");
-    } else {
-      //Set the waterTooHigh boolean to false
-      waterTooHigh = false;
-      Serial.println("Water level: " + String(waterLevel) + " is normal");
-    }
+    //Return the reading value
+    return payload.substring(startIndex, endIndex).toInt();
   } else {
-    Serial.println("Unable to get distance reading");
+    //Return -1 to show unable to get reading
+    Serial.println("Reading not available");
+    return -1;
   }
 }
-
