@@ -36,5 +36,6 @@ Tools > Board > Boards Manager
 - Download latest esp8266 version
 
 3. Install DHT11 library
+<br>
 -DHT sensor library by Adafruit
 
