@@ -1,7 +1,7 @@
 # Smart home environmental monitor system
 
 ### Board A schematics
-![Board B](Board%20B%20schematics.png)
+![Board B](Board%20A%20schematics.png)
 ### Parts
 - NodeMCU esp8266
 - DHT11 sensor
@@ -9,7 +9,7 @@
 - Ultrasonic sensor
   
 ### Board B schematics
-![Board A](Board%20A%20schematics.png)
+![Board A](Board%20B%20schematics.png)
 ### Parts
 - NodeMCU esp8266
 - Servo motor
