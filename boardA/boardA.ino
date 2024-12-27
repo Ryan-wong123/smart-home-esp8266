@@ -10,21 +10,13 @@
 ESP8266WebServer server(80);
 
 //Wifi ssid and password (replace with own wifi ssid and password)
-const char* ssid = "wifiname";
-const char* password =  "wifipassword"; 
+const char* ssid = "Sweethome38";
+const char* password =  "ernyse2004"; 
 
 //Initialise Light sensor pin
 const int lightSensor = A0;     
 //Set light intensity reading to 0 as default
 int lightIntensity = 0;
-
-//Initialise Humidity pin
-const int humidityPin = D6;       
-//Set temperature and humidity readings to 0 as default
-int temperature = 0;
-int humidity = 0;
-//Initialise the DHT11
-DHT dht(humidityPin, DHT11);      
 
 //Initialise the trigger pin of ultrasonic sensor
 const int triggerPin  = D4;
@@ -34,6 +26,14 @@ const int echoPin = D8;
 long durationTakenForDistance = 0;
 //Set the distance reading from the ultrasonic sensor to 0 as default
 int distance = 0;
+
+//Initialise Humidity pin
+const int humidityPin = D6;       
+//Set temperature and humidity readings to 0 as default
+int temperature = 0;
+int humidity = 0;
+//Initialise the DHT11
+DHT dht(humidityPin, DHT11);      
 
 void setup() {
   //Connect to the wifi
@@ -76,10 +76,10 @@ void loop() {
 
   //Monitor light reading
   GetLightReading();
-  //Monitor Temperature and humidity reading
-  GetTemperatureAndHumidityReading(); 
   //Monitor ultrasonic reading                  
-  GetDistanceReading(); 
+  GetDistanceReading();
+  //Monitor Temperature and humidity reading
+  GetTemperatureAndHumidityReading();  
 }
 
 //Function to get light reading
@@ -88,25 +88,6 @@ void GetLightReading() {
   lightIntensity = analogRead(lightSensor); 
   //Print output from light sensor to serial monitor
   Serial.println("Light level: " + String(lightIntensity));
-}
-
-//Function to get the temperature and humidity reading
-void GetTemperatureAndHumidityReading() {
-  //Set delay of 2 seconds to get accurate reading
-  delay(2000);
-  
-  //Store the temperature and humidity reading
-  temperature = dht.readTemperature();   
-  humidity = dht.readHumidity();        
-
-  //Check if the reading from DHT11 is accurate
-  if (isnan(temperature) || isnan(humidity)) {
-    Serial.println("Failed to get correct reading from DHT11");
-    return;
-  }
-  //Print output from DHT11 sensor to serial monitor
-  Serial.println("Temperature: "+ String(temperature));
-  Serial.println("Humidity: " + String(humidity));
 }
 
 //Function to get the distance reading from ultrasonic sensor
@@ -130,6 +111,25 @@ void GetDistanceReading(){
 
   //Print the output distance in the serial monitor
   Serial.println("Distance: " + String(distance) + "cm");
+}
+
+//Function to get the temperature and humidity reading
+void GetTemperatureAndHumidityReading() {
+  //Set delay of 2 seconds to get accurate reading
+  delay(2000);
+  
+  //Store the temperature and humidity reading
+  temperature = dht.readTemperature();   
+  humidity = dht.readHumidity();        
+
+  //Check if the reading from DHT11 is accurate
+  if (isnan(temperature) || isnan(humidity)) {
+    Serial.println("Failed to get correct reading from DHT11");
+    return;
+  }
+  //Print output from DHT11 sensor to serial monitor
+  Serial.println("Temperature: "+ String(temperature));
+  Serial.println("Humidity: " + String(humidity));
 }
 
 //Function to post data to server with readings from all sensors
