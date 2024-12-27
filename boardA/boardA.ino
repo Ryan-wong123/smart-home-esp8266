@@ -1,6 +1,7 @@
-#include <TinyDHT.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+#include <DHT.h>
+#include <DHT_U.h>
 
 // Set the PORT for the web server
 ESP8266WebServer server(80);
@@ -86,7 +87,7 @@ bool isSunny() {
 }
 
 void readTempHum() {
-
+  delay(2000);
   temperature = dht.readTemperature();   // Read temperature
   humidity = dht.readHumidity();         // Read humidity
 
