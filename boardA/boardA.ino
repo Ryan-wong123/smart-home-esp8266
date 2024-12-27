@@ -1,149 +1,158 @@
+//ESP8266 wifi library
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+
+//DHT11 library
 #include <DHT.h>
 #include <DHT_U.h>
 
-// Set the PORT for the web server
+//Initialise webserver port number
 ESP8266WebServer server(80);
 
-// The WiFi details 
-const char* ssid = "Sweethome38";
-const char* password =  "ernyse2004"; 
+//Wifi ssid and password (replace with own wifi ssid and password)
+const char* ssid = "<Wifi_SSID>";
+const char* password =  "<Wifi_password>"; 
 
-const int photoSensor = A0;        // Light sensor
-int photoValue = 0;
-int photoThreshold = 50;            // Threshold for light
+//Initialise Light sensor pin
+const int lightSensor = A0;     
+//Set light intensity reading to 0 as default
+int lightIntensity = 0;
 
-const int humidityPin = D6;        // DHT sensor pin
-int temperature = 0;
-int humidity = 0;
-DHT dht(humidityPin, DHT11);       // Initialize DHT sensor with DHT11 model
-
-const int trigPin  = D4;
+//Initialise the trigger pin of ultrasonic sensor
+const int triggerPin  = D4;
+//Initialise the echo pin of the ultrasonic sensor
 const int echoPin = D8;
-
-long duration = 0;
+//Set the duration taken to get the ultrasonic wave from the echo pin
+long durationTakenForDistance = 0;
+//Set the distance reading from the ultrasonic sensor to 0 as default
 int distance = 0;
 
+//Initialise Humidity pin
+const int humidityPin = D6;       
+//Set temperature and humidity readings to 0 as default
+int temperature = 0;
+int humidity = 0;
+//Initialise the DHT11
+DHT dht(humidityPin, DHT11);      
+
 void setup() {
-  //Connect to the WiFi network
+  //Connect to the wifi
   WiFi.begin(ssid, password); 
 
-  pinMode(photoSensor, INPUT);
+  //Set the light sensor pin as input
+  pinMode(lightSensor, INPUT);
 
-
-  pinMode(trigPin,OUTPUT);
+  //Set the trigger pin as output to emit ultrasonic wave
+  pinMode(triggerPin,OUTPUT);
+  //Set the echo pin as the input to reach the ultrasonic wave reading
   pinMode(echoPin,INPUT);
 
-  Serial.begin(9600);              // Start serial communication at 9600 baud rate
-  dht.begin();                     // Initialize DHT sensor
+  //Set the baud rate as 9600 for serial monitor
+  Serial.begin(9600);             
+  
+  //Start the DHT11 sensor
+  dht.begin();                    
 
-    // Wait for connection
+  //Try to reconnect to wifi
   while (WiFi.status() != WL_CONNECTED) {  
       delay(500);
-      Serial.println("Waiting to connect...");
+      Serial.println("Connecting");
   }
 
-  //Print the board IP address
-  Serial.print("IP address: ");
+  //Print the IP address of the connected wifi
+  Serial.print("Connected to : ");
   Serial.println(WiFi.localIP());  
 
-  server.on("/", get_index); // Get the index page on root route 
-  //server.on("/setBuzzerStatus", setBuzzerStatus); // Get the setBuzzer page
+  //set the route to to fetch data to web server
+  server.on("/", fetchData); 
   
-  server.begin(); //Start the server
-  Serial.println("Server listening");
+  //Start the server
+  server.begin(); 
 }
 
 void loop() {
-  // This will keep the server and serial monitor available 
-  Serial.println("Server is running");
-
-  //Handling of incoming client requests
+  //Fetch data to and from server
   server.handleClient(); 
 
-  if (isSunny()) {
-    Serial.println("Too bright");
-
-  } else {
-    Serial.println("Too dim");
-  }
-
-  readTempHum();                   // Read temperature and humidity
-
-  distanceCentimeter(); // read distance
+  //Monitor light reading
+  GetLightReading();
+  //Monitor ultrasonic reading                  
+  GetDistanceReading();
+  //Monitor Temperature and humidity reading
+  GetTemperatureAndHumidityReading();  
 }
 
-bool isSunny() {
-  photoValue = analogRead(photoSensor);  // Read light sensor value
-  Serial.print("Light level: ");
-  Serial.println(photoValue);
-
-  if (photoValue > photoThreshold) {
-    return true;  // It's sunny
-  } else {
-    return false; // It's dim
-  }
+//Function to get light reading
+void GetLightReading() {
+  //Store the light reading
+  lightIntensity = analogRead(lightSensor); 
+  //Print output from light sensor to serial monitor
+  Serial.println("Light level: " + String(lightIntensity));
 }
 
-void readTempHum() {
-  delay(2000);
-  temperature = dht.readTemperature();   // Read temperature
-  humidity = dht.readHumidity();         // Read humidity
-
-  if (isnan(temperature) || isnan(humidity)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return; // Skip if the sensor reading is invalid
-  }
-
-  Serial.print("Temperature: ");
-  Serial.println(temperature);
-  Serial.print("Humidity: ");
-  Serial.println(humidity);
-}
-
-void distanceCentimeter(){
-  //clear the trigger pin
-  digitalWrite(trigPin, LOW);
+//Function to get the distance reading from ultrasonic sensor
+void GetDistanceReading(){
+  //Set trigger pin to default state and wait for 2 microseconds to reset the trigger pin
+  digitalWrite(triggerPin, LOW);
   delayMicroseconds(2);
 
-  //set the trigger pin on higher state for 10 micro seconds
-  digitalWrite(trigPin, HIGH);
+  //Emit ultrasonic wave from trigger pin and wait for 10 microseconds
+  digitalWrite(triggerPin, HIGH);
   delayMicroseconds(10);
 
-  //clears the trigger pin
-  digitalWrite(trigPin, LOW);
+  //Stop the emission of ultrasonic wave
+  digitalWrite(triggerPin, LOW);
 
-  //reads the echo pin, returns the sound wave travel time in microseconds
-  duration = pulseIn(echoPin, HIGH);
-  
-  // calculate distance in cm
-  distance = (duration * 0.034) / 2;
+  //Get the ultrasonic wave from echo pin
+  durationTakenForDistance = pulseIn(echoPin, HIGH);
 
-  Serial.print(distance);
-  Serial.println("cm");
+  //Calculate the distance between ultrasonic sensor and target object
+  distance = (durationTakenForDistance * 0.034) / 2;
+
+  //Print the output distance in the serial monitor
+  Serial.println("Distance: " + String(distance) + "cm");
 }
 
-void get_index() {
+//Function to get the temperature and humidity reading
+void GetTemperatureAndHumidityReading() {
+  //Set delay of 2 seconds to get accurate reading
+  delay(2000);
+  
+  //Store the temperature and humidity reading
+  temperature = dht.readTemperature();   
+  humidity = dht.readHumidity();        
 
+  //Check if the reading from DHT11 is accurate
+  if (isnan(temperature) || isnan(humidity)) {
+    Serial.println("Failed to get correct reading from DHT11");
+    return;
+  }
+  //Print output from DHT11 sensor to serial monitor
+  Serial.println("Temperature: "+ String(temperature));
+  Serial.println("Humidity: " + String(humidity));
+}
+
+//Function to post data to server with readings from all sensors
+void fetchData() {
+
+  //Display the readings from sensors in the html page
   String html ="<!DOCTYPE html> <html> ";
   html += "<head><meta http-equiv=\"refresh\" content=\"2\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head>";
   html += "<body> <h1>Home environmental monitor system</h1>";
-  html += "<div> <p> <strong> The temperature preference is: ";
+  html += "<div> <p> <strong> The temperature level is: ";
   html += temperature;
   html +="</strong> degrees. </p>";
-  html += "<div> <p> <strong> The humidity preference is: ";
+  html += "<div> <p> <strong> The humidity level is: ";
   html += humidity;
   html +="</strong> %. </p>";
   html += "<div> <p> <strong> The light intensity is: ";
-  html += photoValue;
+  html += lightIntensity;
   html +="</strong> lx . </p>";
   html += "<div> <p> <strong> The water level is: ";
   html += distance;
   html +="</strong> cm. </p>";
   html +="</body> </html>";
   
-  //Print a welcoming message on the index page
+  //Send the data over with 200 response code to server
   server.send(200, "text/html", html);
-  
 }
