@@ -10,8 +10,8 @@
 ESP8266WebServer server(80);
 
 //Wifi ssid and password (replace with own wifi ssid and password)
-const char* ssid = "Sweethome38";
-const char* password =  "ernyse2004"; 
+const char* ssid = "<Wifi_SSID>";
+const char* password =  "<Wifi_password>"; 
 
 //Initialise Light sensor pin
 const int lightSensor = A0;     
