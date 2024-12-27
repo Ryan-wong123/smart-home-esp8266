@@ -38,5 +38,6 @@ Tools > Board > Boards Manager
 <br>
 
 3. Install DHT11 library
+<br>
 -DHT sensor library by Adafruit
 
