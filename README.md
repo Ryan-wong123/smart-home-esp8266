@@ -35,5 +35,6 @@ https://github.com/nodemcu/nodemcu-devkit/tree/master/Drivers
 Tools > Board > Boards Manager
 - Download latest esp8266 version
 
-
+3. Install DHT11 library
+-DHT sensor library by Adafruit
 
