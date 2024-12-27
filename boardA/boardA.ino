@@ -139,10 +139,10 @@ void fetchData() {
   String html ="<!DOCTYPE html> <html> ";
   html += "<head><meta http-equiv=\"refresh\" content=\"2\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head>";
   html += "<body> <h1>Home environmental monitor system</h1>";
-  html += "<div> <p> <strong> The temperature preference is: ";
+  html += "<div> <p> <strong> The temperature level is: ";
   html += temperature;
   html +="</strong> degrees. </p>";
-  html += "<div> <p> <strong> The humidity preference is: ";
+  html += "<div> <p> <strong> The humidity level is: ";
   html += humidity;
   html +="</strong> %. </p>";
   html += "<div> <p> <strong> The light intensity is: ";

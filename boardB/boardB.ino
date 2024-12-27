@@ -14,8 +14,8 @@ const int buzzerPin = D5;
 //Set the threshold levels for the sensors
 const int temperatureThreshold = 30;
 const int humidityThreshold = 50; 
-const int lightThreshold = 50;
-const int waterLevelThreshold = 50;
+const int lightThreshold = 200;
+const int waterLevelThreshold = 20;
 
 //Set all flags for sensor readings
 bool isTooHot = false;
@@ -135,7 +135,7 @@ void fetchData() {
 //Function to get temperature reading
 void GetTemperatureReading(const String &payload) {
   //Set the start of the token position
-  String startToken = "The temperature preference is: ";
+  String startToken = "The temperature level is: ";
   //Set the ending token position
   String endToken = " degrees";
 
