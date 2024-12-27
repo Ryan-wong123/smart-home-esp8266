@@ -14,9 +14,9 @@ const char* ssid = "wifiname";
 const char* password =  "wifipassword"; 
 
 //Initialise Light sensor pin
-const int photoSensor = A0;     
+const int lightSensor = A0;     
 //Set light intensity reading to 0 as default
-int photoValue = 0;
+int lightIntensity = 0;
 
 //Initialise Humidity pin
 const int humidityPin = D6;       
@@ -27,11 +27,11 @@ int humidity = 0;
 DHT dht(humidityPin, DHT11);      
 
 //Initialise the trigger pin of ultrasonic sensor
-const int trigPin  = D4;
+const int triggerPin  = D4;
 //Initialise the echo pin of the ultrasonic sensor
 const int echoPin = D8;
 //Set the duration taken to get the ultrasonic wave from the echo pin
-long duration = 0;
+long durationTakenForDistance = 0;
 //Set the distance reading from the ultrasonic sensor to 0 as default
 int distance = 0;
 
@@ -40,10 +40,10 @@ void setup() {
   WiFi.begin(ssid, password); 
 
   //Set the light sensor pin as input
-  pinMode(photoSensor, INPUT);
+  pinMode(lightSensor, INPUT);
 
   //Set the trigger pin as output to emit ultrasonic wave
-  pinMode(trigPin,OUTPUT);
+  pinMode(triggerPin,OUTPUT);
   //Set the echo pin as the input to reach the ultrasonic wave reading
   pinMode(echoPin,INPUT);
 
@@ -64,7 +64,7 @@ void setup() {
   Serial.println(WiFi.localIP());  
 
   //set the route to to fetch data to web server
-  server.on("/", get_index); 
+  server.on("/", fetchData); 
   
   //Start the server
   server.begin(); 
@@ -75,23 +75,23 @@ void loop() {
   server.handleClient(); 
 
   //Monitor light reading
-  isSunny();
+  GetLightReading();
   //Monitor Temperature and humidity reading
-  readTempHum(); 
+  GetTemperatureAndHumidityReading(); 
   //Monitor ultrasonic reading                  
-  distanceCentimeter(); 
+  GetDistanceReading(); 
 }
 
 //Function to get light reading
-void isSunny() {
+void GetLightReading() {
   //Store the light reading
-  photoValue = analogRead(photoSensor); 
+  lightIntensity = analogRead(lightSensor); 
   //Print output from light sensor to serial monitor
-  Serial.println("Light level: " + String(photoValue));
+  Serial.println("Light level: " + String(lightIntensity));
 }
 
 //Function to get the temperature and humidity reading
-void readTempHum() {
+void GetTemperatureAndHumidityReading() {
   //Set delay of 2 seconds to get accurate reading
   delay(2000);
   
@@ -110,30 +110,30 @@ void readTempHum() {
 }
 
 //Function to get the distance reading from ultrasonic sensor
-void distanceCentimeter(){
+void GetDistanceReading(){
   //Set trigger pin to default state and wait for 2 microseconds to reset the trigger pin
-  digitalWrite(trigPin, LOW);
+  digitalWrite(triggerPin, LOW);
   delayMicroseconds(2);
 
   //Emit ultrasonic wave from trigger pin and wait for 10 microseconds
-  digitalWrite(trigPin, HIGH);
+  digitalWrite(triggerPin, HIGH);
   delayMicroseconds(10);
 
   //Stop the emission of ultrasonic wave
-  digitalWrite(trigPin, LOW);
+  digitalWrite(triggerPin, LOW);
 
   //Get the ultrasonic wave from echo pin
-  duration = pulseIn(echoPin, HIGH);
+  durationTakenForDistance = pulseIn(echoPin, HIGH);
 
   //Calculate the distance between ultrasonic sensor and target object
-  distance = (duration * 0.034) / 2;
+  distance = (durationTakenForDistance * 0.034) / 2;
 
   //Print the output distance in the serial monitor
   Serial.println("Distance: " + String(distance) + "cm");
 }
 
 //Function to post data to server with readings from all sensors
-void get_index() {
+void fetchData() {
 
   //Display the readings from sensors in the html page
   String html ="<!DOCTYPE html> <html> ";
@@ -146,7 +146,7 @@ void get_index() {
   html += humidity;
   html +="</strong> %. </p>";
   html += "<div> <p> <strong> The light intensity is: ";
-  html += photoValue;
+  html += lightIntensity;
   html +="</strong> lx . </p>";
   html += "<div> <p> <strong> The water level is: ";
   html += distance;
