@@ -87,7 +87,7 @@ void isSunny() {
   //Store the light reading
   photoValue = analogRead(photoSensor); 
   //Print output from light sensor to serial monitor
-  Serial.println("Light level: " + int(photoValue));
+  Serial.println("Light level: " + String(photoValue));
 }
 
 //Function to get the temperature and humidity reading
@@ -105,8 +105,8 @@ void readTempHum() {
     return;
   }
   //Print output from DHT11 sensor to serial monitor
-  Serial.println("Temperature: "+ int(temperature));
-  Serial.println("Humidity: " + int(humidity));
+  Serial.println("Temperature: "+ String(temperature));
+  Serial.println("Humidity: " + String(humidity));
 }
 
 //Function to get the distance reading from ultrasonic sensor
@@ -129,7 +129,7 @@ void distanceCentimeter(){
   distance = (duration * 0.034) / 2;
 
   //Print the output distance in the serial monitor
-  Serial.println("Distance: " + int(distance) + "cm");
+  Serial.println("Distance: " + String(distance) + "cm");
 }
 
 //Function to post data to server with readings from all sensors
